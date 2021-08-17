@@ -57,7 +57,8 @@ variable "subnet_id" {
 variable "local_networks" {
   description = <<EOF
   List of local virtual network connections to connect to gateway.
-    name = string, 
+    connection_name = string
+    name = string,
     gateway_address = string, 
     address_space = list(string), 
     shared_key = string, 

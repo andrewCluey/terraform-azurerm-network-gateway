@@ -40,7 +40,7 @@ resource "azurerm_virtual_network_gateway" "gw" {
 
 
 resource "azurerm_local_network_gateway" "local_gw" {
-  name                = "lgw-${var.local_networks.name}"
+  name                = var.local_networks.name
   resource_group_name = var.resource_group_name
   location            = var.location
   gateway_address     = var.local_networks.gateway_address
@@ -49,7 +49,7 @@ resource "azurerm_local_network_gateway" "local_gw" {
 }
 
 resource "azurerm_virtual_network_gateway_connection" "local_gw_connection" {
-  name                = "lgwcon-${var.local_networks.name}"
+  name                = var.local_networks.connection_name
   location            = var.location
   resource_group_name = var.resource_group_name
 
