@@ -1,11 +1,16 @@
-# terraform-azurerm-network-gateway
-Deploy a new Azure Network Gateway.
+terraform {
+  required_providers {
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = "= 2.60.0"
+    }
+  }
+}
 
-Creates an Azure Virtual Network Gateway (VPN), a Public IP Address, a Local Network Gateway and a Network Gateway Connection (IPSec).
+provider "azurerm" {
+  features {}
+}
 
-## Deployment Example (v1.0)
-
-```hcl
 resource "azurerm_resource_group" "gw_test" {
   name     = "rg-gateway-test"
   location = "uksouth"
@@ -25,6 +30,7 @@ resource "azurerm_subnet" "sn_gw" {
   virtual_network_name = azurerm_virtual_network.gw_test_vn.name
   address_prefixes     = ["10.0.1.0/24"]
 }
+
 
 module "vpn_dev" {
   source = "../../"
@@ -51,12 +57,3 @@ module "vpn_dev" {
       }
     }
 }
-```
-
-
-
-## Future enhancements
-- Add in options for diagnostics with log Analytics
-- Expanded options for selecting other types of gateway and possibly Client-Site VPN
-
-

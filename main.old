@@ -1,0 +1,44 @@
+
+
+resource "azurerm_public_ip" "vnet_gw_pip" {
+  name                = var.pip_name
+  location            = var.location
+  resource_group_name = var.resource_group_name
+  allocation_method = var.pip_allocation_method
+}
+
+resource "azurerm_virtual_network_gateway" "vnet_gateway" {
+  name                = var.vnet_gw_name
+  location            = var.location
+  resource_group_name = var.resource_group_name
+  type                = var.type # Either 'Vpn' or ExpressRoute. Defaults to 'Vpn'.
+  vpn_type            = var.vpn_type # Type of virtual network Gateway. RouteBased; PolicyBased. Defaults to RouteBased.
+  enable_bgp          = var.enable_bgp # defaults to false. BGP Options to be added in future version of this module. 
+  active_active       = var.active_active # Defaults to false. True will require a HighPerformance or UltraPerformance SKU.
+  sku                 = var.sku # defaults to Basic. Valid options - 'Basic', 'Standard', HighPerformance; UltraPerformance. Depends on type, vpn_type and generation.
+  generation          = var.generation # either 'Generation1, Generation2 or None. Defaults to Generation1 (Basic).
+
+  ip_configuration {
+      name = "${var.vnet_gw_name}-ipconfig"
+      private_ip_address_allocation = "Dynamic"
+      subnet_id = var.subnet_id      # ID of the Gateway subnet where the vNet Gateway will be created. Must be named 'GatewaySubnet'
+      public_ip_address_id = azurerm_public_ip.vnet_gw_pip.id
+  }
+
+}
+
+### Create Site to Site connection. ##
+
+# Local gateway
+resource "azurerm_local_network_gateway" "onpremise" {
+  name                = var.local_ntwork_gateway
+  location            = var.location
+  resource_group_name = var.resource_group_name
+  gateway_address     = var.gateway_address  # The IP address of the on-premise Gateway to connect with.
+  gateway_fqdn        = var.gateway_fqdn # The FQDN of the gateway to conenct to on-premise. Either FQDN or IP address must be specified.
+  address_space       = var.local_address_cidrs # A list of Address spcae (IN CIDR Format) that will be exposed.
+  tags                = var.tags
+}
+
+
+
