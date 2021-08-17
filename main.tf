@@ -56,6 +56,7 @@ resource "azurerm_virtual_network_gateway_connection" "local_gw_connection" {
   type                       = "IPSec"
   virtual_network_gateway_id = azurerm_virtual_network_gateway.gw.id
   local_network_gateway_id   = azurerm_local_network_gateway.local_gw.id
+  connection_protocol        = "IKEv2"
 
   shared_key = var.local_networks.shared_key
 
@@ -64,7 +65,7 @@ resource "azurerm_virtual_network_gateway_connection" "local_gw_connection" {
     content {
       dh_group         = lookup(var.local_networks.ipsec_policy, "dh_group", "DHGroup14")
       ike_encryption   = lookup(var.local_networks.ipsec_policy, "ike_encryption", "AES256" )
-      ike_integrity    = lookup(var.local_networks.ipsec_policy, "ike_integrity", "SHA384")
+      ike_integrity    = lookup(var.local_networks.ipsec_policy, "ike_integrity", "SHA256")
       ipsec_encryption = lookup(var.local_networks.ipsec_policy, "ipsec_encryption", "AES256")
       ipsec_integrity  = lookup(var.local_networks.ipsec_policy, "ipsec_integrity", "SHA256")
       pfs_group        = lookup(var.local_networks.ipsec_policy, "pfs_group", "PFS2048")
