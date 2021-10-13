@@ -2,7 +2,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "= 2.60.0"
+      version = "= 2.74.0"
     }
   }
 }
@@ -42,18 +42,48 @@ module "vpn_dev" {
   generation          = "Generation2"
   subnet_id           = azurerm_subnet.sn_gw.id
 
-  public_ip           = {
-    sku = "Basic"
+  public_ip = {
+    sku               = "Basic"
     allocation_method = "Dynamic"
   }
-  
-  local_networks = {
-      name            = "dev-op-ln"
-      gateway_address = "8.8.8.8"
-      address_space   = ["192.168.1.0/24"]
-      shared_key      = "test-shared-key"
-      ipsec_policy = {
-        dh_group = "DHGroup14"
+
+  vpn_config = {
+    local_gw = {
+      "main_dc" = {
+        gateway_address = "8.1.2.3"
+        address_space   = ["10.200.0.0/24"]
+      },
+      "second_dc" = {
+        gateway_address = "8.1.2.4"
+        address_space   = ["10.201.0.0/24"]
+      },
+      "dummy_dc" = {
+        gateway_address = "8.1.2.5"
+        address_space   = ["10.202.0.0/24"]
       }
     }
+    connections = {
+      "main_vpn" = {
+        shared_key        = "iuhwieuhi"
+        local_net_gw_name = "main_dc"
+        ipsec_policy = {
+          dh_group = "DHGroup24"
+        }
+      },
+      "second_vpn" = {
+        shared_key        = "iu3423ei"
+        local_net_gw_name = "second_dc"
+        ipsec_policy = {
+          dh_group = "DHGroup14"
+        }
+      },
+      "dummy_vpn" = {
+        shared_key        = "iuey87ty32789qdiuewbh"
+        local_net_gw_name = "dummy_dc"
+        ipsec_policy = {
+          dh_group = "DHGroup14"
+        }
+      },
+    }
+  }
 }

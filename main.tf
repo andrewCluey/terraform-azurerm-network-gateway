@@ -39,40 +39,45 @@ resource "azurerm_virtual_network_gateway" "gw" {
 }
 
 
+
 resource "azurerm_local_network_gateway" "local_gw" {
-  name                = var.local_networks.name
+  for_each = var.vpn_config.local_gw
+  name                = each.key
   resource_group_name = var.resource_group_name
   location            = var.location
-  gateway_address     = var.local_networks.gateway_address
-  address_space       = var.local_networks.address_space
+  gateway_address     = each.value.gateway_address
+  address_space       = each.value.address_space
   tags                = var.tags
 }
 
+
 resource "azurerm_virtual_network_gateway_connection" "local_gw_connection" {
-  name                = var.local_networks.connection_name
+  for_each            = var.vpn_config.connections
+  name                = each.key
   location            = var.location
   resource_group_name = var.resource_group_name
 
   type                       = "IPSec"
   virtual_network_gateway_id = azurerm_virtual_network_gateway.gw.id
-  local_network_gateway_id   = azurerm_local_network_gateway.local_gw.id
+  local_network_gateway_id   = azurerm_local_network_gateway.local_gw[each.value.local_net_gw_name].id
   connection_protocol        = "IKEv2"
 
-  shared_key = var.local_networks.shared_key
+  shared_key = each.value.shared_key
 
   dynamic "ipsec_policy" {
-    for_each = var.local_networks.ipsec_policy != null ? [true] : []
+    for_each = each.value.ipsec_policy != null ? [true] : []
     content {
-      dh_group         = lookup(var.local_networks.ipsec_policy, "dh_group", "DHGroup14")
-      ike_encryption   = lookup(var.local_networks.ipsec_policy, "ike_encryption", "AES256" )
-      ike_integrity    = lookup(var.local_networks.ipsec_policy, "ike_integrity", "SHA256")
-      ipsec_encryption = lookup(var.local_networks.ipsec_policy, "ipsec_encryption", "AES256")
-      ipsec_integrity  = lookup(var.local_networks.ipsec_policy, "ipsec_integrity", "SHA256")
-      pfs_group        = lookup(var.local_networks.ipsec_policy, "pfs_group", "PFS2048")
-      sa_datasize      = lookup(var.local_networks.ipsec_policy, "sa_datasize", "102400000")
-      sa_lifetime      = lookup(var.local_networks.ipsec_policy, "sa_lifetime", "28800")
+      dh_group         = lookup(each.value, "dh_group", "DHGroup14")
+      ike_encryption   = lookup(each.value, "ike_encryption", "AES256" )
+      ike_integrity    = lookup(each.value, "ike_integrity", "SHA256")
+      ipsec_encryption = lookup(each.value, "ipsec_encryption", "AES256")
+      ipsec_integrity  = lookup(each.value, "ipsec_integrity", "SHA256")
+      pfs_group        = lookup(each.value, "pfs_group", "PFS2048")
+      sa_datasize      = lookup(each.value, "sa_datasize", "102400000")
+      sa_lifetime      = lookup(each.value, "sa_lifetime", "28800")
     }
   }
 
   tags = var.tags
 }
+

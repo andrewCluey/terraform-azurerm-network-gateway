@@ -16,10 +16,10 @@ variable "vnet_gw_name" {
   description = "description"
 }
 
-variable "tags" {
-  type        = map
+variable "generation" {
+  type        = string
   description = "description"
-  default     = {}
+  default     = "Basic"
 }
 
 
@@ -53,21 +53,44 @@ variable "subnet_id" {
   description = "description"
 }
 
+variable "tags" {
+  type        = map
+  description = "description"
+  default     = {}
+}
 
-variable "local_networks" {
+variable "vpn_config" {
+  type        = any
   description = <<EOF
-  List of local virtual network connections to connect to gateway.
-    connection_name = string
-    name = string,
-    gateway_address = string, 
-    address_space = list(string), 
-    shared_key = string, 
-    ipsec_policy = any 
+  Input object to define an Azure Site-Site VPN connection. Multiple Local Netowrk gateways & VPN connections can be defined.
+EXAMPLE:
+
+vpn_config = {
+  local_gw = {
+    "main_dc" = {
+      gateway_address = "8.1.2.3"
+      address_space   = ["10.200.0.0/24"]
+    },
+    "second_dc" = {
+      gateway_address = "8.1.2.4"
+      address_space   = ["10.201.0.0/24"]
+    }
+  connections = {
+    "main_vpn" = {
+      shared_key        = "iuhwieuhi"
+      local_net_gw_name = "main_dc"
+      ipsec_policy      = {
+        dh_group = "DHGroup24"
+      }
+    },
+    "second_vpn" = {
+      shared_key        = "iu3423ei"
+      local_net_gw_name = "second_dc"
+      ipsec_policy      = {
+        dh_group = "DHGroup14"
+      }
+    }
+}
 EOF
 }
 
-variable "generation" {
-  type        = string
-  description = "description"
-  default     = "Basic"
-}
