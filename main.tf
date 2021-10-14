@@ -1,3 +1,8 @@
+locals {
+  default_create_duration_delay  = "10s"
+  default_destroy_duration_delay = "50s"
+}
+
 resource "random_string" "pip_dns" {
   length  = 5
   special = false
@@ -49,7 +54,14 @@ resource "azurerm_local_network_gateway" "local_gw" {
   address_space       = each.value.address_space
   tags                = var.tags
 }
-
+# Add delay after creation and deletion of local gateway resource
+resource "time_sleep" "after_local_gateway" {
+  depends_on = [
+    azurerm_local_network_gateway.local_gw
+  ]
+  create_duration  = local.default_create_duration_delay
+  destroy_duration = local.default_destroy_duration_delay
+}
 
 resource "azurerm_virtual_network_gateway_connection" "local_gw_connection" {
   for_each            = var.vpn_config.connections
@@ -81,3 +93,11 @@ resource "azurerm_virtual_network_gateway_connection" "local_gw_connection" {
   tags = var.tags
 }
 
+# Add delay after creation and deletion of network gateway connection
+resource "time_sleep" "after_network_connection" {
+  depends_on = [
+    azurerm_virtual_network_gateway_connection.local_gw_connection
+  ]
+  create_duration  = local.default_create_duration_delay
+  destroy_duration = local.default_destroy_duration_delay
+}
